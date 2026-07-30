@@ -1,7 +1,8 @@
 import { useRef } from 'react'
 import type { RefObject } from 'react'
 import { gsap, prefersReducedMotion, useGSAP } from './gsap'
-import type { GameEffect } from '../game/types'
+import { GAME_OVER } from './timings'
+import type { GameEffect, GameStatus } from '../game/types'
 
 /** Sequencing knobs for the line-clear timeline, in seconds. */
 const CLEAR = {
@@ -42,6 +43,7 @@ interface BoardAnimationArgs {
   dustRef: RefObject<HTMLDivElement | null>
   clearingLines: number[]
   lastEffect: GameEffect | null
+  status: GameStatus
   onClearComplete: () => void
 }
 
@@ -73,6 +75,7 @@ export function useBoardAnimations({
   dustRef,
   clearingLines,
   lastEffect,
+  status,
   onClearComplete,
 }: BoardAnimationArgs) {
   // Held in a ref so the timeline never captures a stale dispatch and the clear
@@ -228,6 +231,34 @@ export function useBoardAnimations({
       }
     },
     { dependencies: [lastEffect], scope: boardRef, revertOnUpdate: true },
+  )
+
+  // Game over: the stack drops out of the board. revertOnUpdate restores every
+  // cell when the status leaves 'gameover', so a new game starts clean.
+  useGSAP(
+    () => {
+      const board = boardRef.current
+      if (!board || status !== 'gameover' || prefersReducedMotion()) return
+
+      // Cells come back in DOM order (row-major, top row first), so staggering
+      // from the end drops the bottom of the stack first.
+      const stack = gsap.utils.toArray<HTMLElement>('[data-variant="locked"]', board)
+      if (stack.length === 0) return
+
+      // Far enough that every cell clears the board's bottom edge, where the
+      // board's own overflow clip hides it. One read, before any writes.
+      const fall = board.clientHeight
+
+      gsap.to(stack, {
+        y: () => fall + gsap.utils.random(0, 120),
+        rotation: () => gsap.utils.random(-90, 90),
+        duration: GAME_OVER.cascade,
+        // Accelerating, so it reads as the stack giving way rather than sliding.
+        ease: 'power2.in',
+        stagger: { each: GAME_OVER.cellStagger, from: 'end' },
+      })
+    },
+    { dependencies: [status], scope: boardRef, revertOnUpdate: true },
   )
 }
 

@@ -1,3 +1,5 @@
+import { useRef } from 'react'
+import { gsap, prefersReducedMotion, useGSAP } from '../anim/gsap'
 import { TETROMINO_COLORS, TETROMINO_SHAPES } from '../game/tetrominoes'
 import type { TetrominoType } from '../game/types'
 
@@ -47,12 +49,28 @@ function toFixedGrid(shape: number[][]): number[][] {
 
 export function NextPiece({ type }: NextPieceProps) {
   const shape = type ? toFixedGrid(TETROMINO_SHAPES[type]) : null
+  const gridRef = useRef<HTMLDivElement>(null)
+
+  // The queue has already advanced by the time this runs, so the incoming piece
+  // slides in rather than the outgoing one sliding away.
+  useGSAP(
+    () => {
+      if (!gridRef.current || !type || prefersReducedMotion()) return
+      gsap.fromTo(
+        gridRef.current,
+        { y: -10, opacity: 0, scale: 0.9 },
+        { y: 0, opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(2)', clearProps: 'transform,opacity' },
+      )
+    },
+    { dependencies: [type], scope: gridRef, revertOnUpdate: true },
+  )
 
   return (
     <div className="w-24 rounded-xl border border-white/10 bg-black/50 p-3 sm:w-28">
       <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-white/40">Next</p>
       <div
-        className="mx-auto grid gap-[3px]"
+        ref={gridRef}
+        className="mx-auto grid gap-[3px] will-change-transform"
         style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`, width: '100%', aspectRatio: '1 / 1' }}
       >
         {shape?.flatMap((row, y) =>

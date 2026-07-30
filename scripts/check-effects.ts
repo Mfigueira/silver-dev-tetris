@@ -4,7 +4,7 @@
  */
 import { reducer, createInitialState } from '../src/game/reducer'
 import type { Action } from '../src/game/reducer'
-import { BOARD_HEIGHT, BOARD_WIDTH } from '../src/game/constants'
+import { BOARD_HEIGHT, BOARD_WIDTH, LINES_PER_LEVEL } from '../src/game/constants'
 import type { GameState } from '../src/game/types'
 
 let failures = 0
@@ -107,6 +107,38 @@ console.log('\nclearing a row reports linesCleared and holds until COMMIT_CLEAR'
     'COMMIT_CLEAR is idempotent, so the safety timeout is harmless',
     reducer(committed, { type: 'COMMIT_CLEAR' }) === committed,
   )
+}
+
+console.log('\nlevel only ever rises on COMMIT_CLEAR, after the clear animation')
+{
+  // One row short of a level, so the next clear crosses the threshold.
+  const base = createInitialState(0)
+  const board = base.board.map((row) => [...row])
+  for (let x = 0; x < BOARD_WIDTH - 1; x++) board[BOARD_HEIGHT - 1][x] = 'I'
+
+  const staged: GameState = {
+    ...base,
+    board,
+    status: 'running',
+    lines: LINES_PER_LEVEL - 1,
+    level: 1,
+    activePiece: { type: 'O', shape: [[1]], position: { x: BOARD_WIDTH - 1, y: 0 } },
+    queue: ['T', 'L', 'J'],
+  }
+
+  const clearing = reducer(staged, { type: 'HARD_DROP' })
+  check('level is unchanged while the clear animates', clearing.level === 1, clearing.level)
+  check('the pending state is the one holding the new level', clearing.pendingClear?.level === 2, clearing.pendingClear?.level)
+
+  const committed = reducer(clearing, { type: 'COMMIT_CLEAR' })
+  check('level rises only once the clear commits', committed.level === 2, committed.level)
+}
+
+console.log('\na lock that clears nothing cannot change the level')
+{
+  const started = run(createInitialState(0), [{ type: 'ENTER' }])
+  const dropped = reducer(started, { type: 'HARD_DROP' })
+  check('level held at 1', dropped.level === started.level, dropped.level)
 }
 
 // Throwing rather than process.exit keeps the exit code non-zero without

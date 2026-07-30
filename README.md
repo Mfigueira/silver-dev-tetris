@@ -8,8 +8,11 @@ A classic Tetris game built with React, TypeScript, and Vite, featuring a built-
 - **Autopilot AI** — a heuristic-based solver that scores every possible rotation/column placement for the current piece (aggregate height, lines cleared, holes, bumpiness) and plays the best one automatically. Toggle it on/off at any time.
 - **Persistent high score** — saved to `localStorage` so it survives page reloads.
 - **GSAP-driven game feel** — line clears burst outward from the centre of each row and cascade bottom-to-top, with a board shake that scales up to a slow-motion beat on a Tetris. Landings get squash-and-stretch, a brightness flash, impact dust, and a jolt proportional to how far the piece fell.
+- **Level-up celebration** — an expanding shockwave, a flashing border, and a surge through the background field.
+- **Animated background** — drifting tetromino motes that speed up as the level climbs.
+- **Animated stats and overlays** — score and high score count up rather than snapping, overlays fade and scale in and out, and the stack collapses out of the well on game over.
 - **Next-piece preview** and a responsive, keyboard-driven UI styled with Tailwind CSS.
-- Honours `prefers-reduced-motion` by swapping the effects for a short fade.
+- Honours `prefers-reduced-motion` throughout, either skipping decorative effects or replacing them with a short fade.
 
 ## Controls
 
@@ -58,9 +61,14 @@ src/
     useTetris.ts     # Wires the reducer to game loop timers, keyboard input, and autopilot
   anim/
     gsap.ts          # GSAP registration and the reduced-motion check
-    useBoardAnimations.ts  # Line-clear and impact timelines, plus their tuning values
+    timings.ts       # Timings shared by components that animate the same moment
+    useBoardAnimations.ts  # Line-clear, impact, and game-over timelines
+    useBackgroundField.ts  # The drifting mote field and its level-driven speed
+    useLevelUp.ts    # Level-up burst
+    useCountUp.ts    # Number tweening for the stat boxes
   components/
     Board.tsx, Cell.tsx, NextPiece.tsx, SidePanel.tsx, GameOverlay.tsx
+    BackgroundField.tsx, LevelUpBurst.tsx
   App.tsx            # Top-level layout
 ```
 
@@ -81,6 +89,19 @@ arrives; `COMMIT_CLEAR` is idempotent, so a late backstop is harmless.
 
 `scripts/check-effects.ts` covers that contract. Run it with
 `npx vite-node scripts/check-effects.ts`.
+
+A few performance rules the animation code sticks to:
+
+- Only `transform` and `opacity` are animated, so work stays on the compositor.
+  `will-change` is set only on elements that actually move.
+- The background field is the one continuously running animation. It is capped at
+  24 elements, each looping forever through a wrap modifier rather than churning
+  new tweens, and its viewport height is cached against `resize` instead of being
+  read every frame.
+- Stat numbers use `gsap.quickTo`, which reuses a single tween. Score can change
+  on every gravity tick, so a fresh tween per update would be wasteful.
+- Multi-element moments (the clear cascade, the game-over collapse) use one
+  staggered tween rather than one tween per cell.
 
 ## How the Autopilot Works
 

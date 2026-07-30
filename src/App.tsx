@@ -1,6 +1,8 @@
 import { buildDisplayGrid } from './game/board'
+import { BackgroundField } from './components/BackgroundField'
 import { Board } from './components/Board'
 import { GameOverlay } from './components/GameOverlay'
+import { LevelUpBurst } from './components/LevelUpBurst'
 import { NextPiece } from './components/NextPiece'
 import { SidePanel } from './components/SidePanel'
 import { useTetris } from './hooks/useTetris'
@@ -12,6 +14,8 @@ function App() {
 
   return (
     <div className="flex min-h-screen flex-col items-center gap-6 px-4 py-8">
+      <BackgroundField level={state.level} />
+
       <h1 className="text-3xl font-black tracking-tight">
         Tetris<span className="text-cyan-400">.dev</span>
       </h1>
@@ -22,8 +26,10 @@ function App() {
             grid={grid}
             clearingLines={state.clearingLines}
             lastEffect={state.lastEffect}
+            status={state.status}
             onClearComplete={commitClear}
           />
+          <LevelUpBurst level={state.level} status={state.status} />
           <GameOverlay status={state.status} score={state.score} highScore={state.highScore} />
         </div>
 
