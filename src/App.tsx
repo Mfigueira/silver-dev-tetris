@@ -29,7 +29,7 @@ function App() {
           className="text-cyan-400"
           style={{ textShadow: "0 0 20px rgba(34, 211, 238, 0.55)" }}
         >
-          .dev
+          .AI
         </span>
       </h1>
 

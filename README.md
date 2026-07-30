@@ -1,4 +1,4 @@
-# Tetris.dev
+# Tetris.AI
 
 A classic Tetris game built with React, TypeScript, and Vite, featuring a built-in AI that can play the game for you.
 
