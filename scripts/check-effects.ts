@@ -109,5 +109,7 @@ console.log('\nclearing a row reports linesCleared and holds until COMMIT_CLEAR'
   )
 }
 
-console.log(failures === 0 ? '\nall checks passed\n' : `\n${failures} check(s) failed\n`)
-process.exit(failures === 0 ? 0 : 1)
+// Throwing rather than process.exit keeps the exit code non-zero without
+// needing node types, which this folder is outside the tsconfig projects for.
+if (failures > 0) throw new Error(`${failures} check(s) failed`)
+console.log('\nall checks passed\n')
