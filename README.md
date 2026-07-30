@@ -2,7 +2,7 @@
 
 A classic Tetris game built with React, TypeScript, and Vite, featuring a built-in AI that can play the game for you.
 
-**[▶ Play it here](https://mfigueira.github.io/react-gsap-tetris/)**
+**[▶ Play it here](https://mfigueira.github.io/tetris-ai/)**
 
 ## Features
 
@@ -49,7 +49,7 @@ npm run lint      # run oxlint
 
 ## Deployment
 
-Live at <https://mfigueira.github.io/react-gsap-tetris/>.
+Live at <https://mfigueira.github.io/tetris-ai/>.
 
 Every push to `main` is linted, built, and published to GitHub Pages by
 `.github/workflows/deploy.yml`. Enable it once under **Settings → Pages** by
@@ -60,7 +60,7 @@ the build as `BASE_PATH`. Local `dev` and `preview` leave it unset and run at `/
 To reproduce the deployed build locally:
 
 ```bash
-BASE_PATH=/react-gsap-tetris/ npm run build
+BASE_PATH=/tetris-ai/ npm run build
 ```
 
 ## Project Structure
