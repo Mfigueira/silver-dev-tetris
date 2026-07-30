@@ -16,8 +16,8 @@ function App() {
     <div className="flex min-h-screen flex-col items-center gap-6 px-4 py-8">
       <BackgroundField level={state.level} />
 
-      <h1 className="text-3xl font-black tracking-tight">
-        Tetris<span className="text-cyan-400">.dev</span>
+      <h1 className="text-3xl font-black tracking-tight" style={{ textShadow: '0 0 32px rgba(34, 211, 238, 0.15)' }}>
+        Tetris<span className="text-cyan-400" style={{ textShadow: '0 0 20px rgba(34, 211, 238, 0.55)' }}>.dev</span>
       </h1>
 
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
@@ -44,8 +44,8 @@ function App() {
         onClick={toggleAutopilot}
         className={`rounded-xl border px-4 py-2 text-sm font-bold uppercase tracking-widest transition-colors ${
           state.autopilot
-            ? 'border-cyan-400 bg-cyan-400/20 text-cyan-300'
-            : 'border-white/10 bg-black/50 text-white/70 hover:border-white/30'
+            ? 'border-cyan-400 bg-cyan-400/20 text-cyan-300 shadow-[0_0_24px_rgba(34,211,238,0.25)]'
+            : 'glass-panel text-white/70 hover:border-cyan-400/40 hover:text-white/90'
         }`}
       >
         Autopilot: {state.autopilot ? 'On' : 'Off'}

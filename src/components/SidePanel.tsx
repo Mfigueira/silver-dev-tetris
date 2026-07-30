@@ -22,7 +22,7 @@ function StatBox({ label, value, highlight, popThreshold }: StatBoxProps) {
   useCountUp(valueRef, value, { popThreshold })
 
   return (
-    <div className="w-24 rounded-xl border border-white/10 bg-black/50 p-3 sm:w-28">
+    <div className="glass-panel w-24 rounded-xl p-3 sm:w-28">
       <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">{label}</p>
       {/* Text content is written by useCountUp, not React, so it can be tweened.
           tabular-nums keeps the width stable while the digits change. */}

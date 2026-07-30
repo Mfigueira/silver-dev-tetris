@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+:root {
+  --accent: #22d3ee;
+  --accent-dim: rgba(34, 211, 238, 0.18);
+  --accent-glow: rgba(34, 211, 238, 0.12);
+  --accent-glow-strong: rgba(34, 211, 238, 0.35);
+}
+
 html,
 body,
 #root {
@@ -9,8 +16,9 @@ body,
 body {
   margin: 0;
   background:
-    radial-gradient(ellipse at top, rgba(250, 204, 21, 0.15), transparent 60%),
-    linear-gradient(160deg, #4c1d95 0%, #7e1d5a 35%, #9d174d 60%, #dc2626 85%, #eab308 100%);
+    radial-gradient(ellipse 90% 55% at 50% -8%, rgba(34, 211, 238, 0.22), transparent 58%),
+    radial-gradient(ellipse 55% 40% at 85% 95%, rgba(168, 85, 247, 0.07), transparent),
+    linear-gradient(180deg, #0c101f 0%, #121a2e 45%, #0a0e18 100%);
   background-attachment: fixed;
   color: #e5e7eb;
   font-family:
@@ -19,4 +27,14 @@ body {
     system-ui,
     -apple-system,
     sans-serif;
+}
+
+/** Shared glass surface — cyan rim light reads against the deep space base. */
+.glass-panel {
+  border: 1px solid var(--accent-dim);
+  background: rgba(0, 0, 0, 0.55);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.45),
+    0 0 36px var(--accent-glow),
+    inset 0 1px 0 rgba(34, 211, 238, 0.07);
 }

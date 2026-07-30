@@ -66,7 +66,7 @@ export function NextPiece({ type }: NextPieceProps) {
   )
 
   return (
-    <div className="w-24 rounded-xl border border-white/10 bg-black/50 p-3 sm:w-28">
+    <div className="glass-panel w-24 rounded-xl p-3 sm:w-28">
       <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-white/40">Next</p>
       <div
         ref={gridRef}

@@ -7,6 +7,7 @@ interface BackgroundFieldProps {
 }
 
 const PALETTE = Object.values(TETROMINO_COLORS) as string[]
+const ACCENT = '#22d3ee'
 
 interface Mote {
   size: number
@@ -14,17 +15,19 @@ interface Mote {
   opacity: number
   /** Outlined motes read as tetromino blocks and cost less to paint than fills. */
   outlined: boolean
+  accent: boolean
 }
 
 function makeMotes(): Mote[] {
   return Array.from({ length: MOTE_COUNT }, (_, i) => {
     const size = 8 + Math.random() * 26
+    const accent = i % 3 === 0
     return {
       size,
-      color: PALETTE[i % PALETTE.length],
-      // Bigger motes read as further away, so keep them fainter.
-      opacity: 0.3 - (size / 34) * 0.16,
-      outlined: Math.random() > 0.45,
+      color: accent ? ACCENT : PALETTE[i % PALETTE.length],
+      opacity: accent ? 0.42 - (size / 34) * 0.14 : 0.32 - (size / 34) * 0.14,
+      outlined: accent ? false : Math.random() > 0.45,
+      accent,
     }
   })
 }
@@ -56,7 +59,9 @@ export function BackgroundField({ level }: BackgroundFieldProps) {
             // painted texture stays cached on the compositor.
             backgroundColor: mote.outlined ? 'transparent' : mote.color,
             border: mote.outlined ? `2px solid ${mote.color}` : undefined,
-            boxShadow: `0 0 ${Math.round(mote.size * 0.8)}px ${mote.color}40`,
+            boxShadow: mote.accent
+              ? `0 0 ${Math.round(mote.size * 1.2)}px rgba(34, 211, 238, 0.65), 0 0 ${Math.round(mote.size * 2.2)}px rgba(34, 211, 238, 0.25)`
+              : `0 0 ${Math.round(mote.size * 0.7)}px ${mote.color}50, 0 0 ${Math.round(mote.size * 1.4)}px rgba(34, 211, 238, 0.18)`,
           }}
         />
       ))}
