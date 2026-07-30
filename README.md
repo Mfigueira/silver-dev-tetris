@@ -2,6 +2,8 @@
 
 A classic Tetris game built with React, TypeScript, and Vite, featuring a built-in AI that can play the game for you.
 
+**[▶ Play it here](https://mfigueira.github.io/silver-dev-tetris/)**
+
 ## Features
 
 - **Full Tetris gameplay** — all 7 tetrominoes (I, J, L, O, S, T, Z), rotation, soft/hard drop, line clears, and a leveling system that speeds up gravity as you clear more lines.
@@ -46,6 +48,8 @@ npm run lint      # run oxlint
 ```
 
 ## Deployment
+
+Live at <https://mfigueira.github.io/silver-dev-tetris/>.
 
 Every push to `main` is linted, built, and published to GitHub Pages by
 `.github/workflows/deploy.yml`. Enable it once under **Settings → Pages** by
