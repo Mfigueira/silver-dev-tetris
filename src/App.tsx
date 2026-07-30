@@ -5,10 +5,13 @@ import { GameOverlay } from "./components/GameOverlay";
 import { LevelUpBurst } from "./components/LevelUpBurst";
 import { NextPiece } from "./components/NextPiece";
 import { SidePanel } from "./components/SidePanel";
+import { SoundControls } from "./components/SoundControls";
+import { useGameSounds } from "./hooks/useGameSounds";
 import { useTetris } from "./hooks/useTetris";
 
 function App() {
   const { state, toggleAutopilot, commitClear } = useTetris();
+  useGameSounds(state);
   const grid = buildDisplayGrid(
     state.board,
     state.activePiece,
@@ -20,18 +23,21 @@ function App() {
     <div className="flex min-h-screen flex-col items-center gap-6 px-4 py-8">
       <BackgroundField level={state.level} />
 
-      <h1
-        className="text-3xl font-black tracking-tight"
-        style={{ textShadow: "0 0 32px rgba(34, 211, 238, 0.15)" }}
-      >
-        Tetris
-        <span
-          className="text-cyan-400"
-          style={{ textShadow: "0 0 20px rgba(34, 211, 238, 0.55)" }}
+      <div className="flex flex-col items-center gap-3">
+        <h1
+          className="text-3xl font-black tracking-tight"
+          style={{ textShadow: "0 0 32px rgba(34, 211, 238, 0.15)" }}
         >
-          .AI
-        </span>
-      </h1>
+          Tetris
+          <span
+            className="text-cyan-400"
+            style={{ textShadow: "0 0 20px rgba(34, 211, 238, 0.55)" }}
+          >
+            .AI
+          </span>
+        </h1>
+        <SoundControls />
+      </div>
 
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
         <div className="relative">
@@ -82,12 +88,14 @@ function App() {
             <kbd className="rounded bg-white/10 px-1.5 py-0.5">→</kbd> move ·{" "}
             <kbd className="rounded bg-white/10 px-1.5 py-0.5">↑</kbd> rotate ·{" "}
             <kbd className="rounded bg-white/10 px-1.5 py-0.5">↓</kbd> soft drop
+            · <kbd className="rounded bg-white/10 px-1.5 py-0.5">Space</kbd>{" "}
+            hard drop
           </div>
           <div>
-            <kbd className="rounded bg-white/10 px-1.5 py-0.5">Space</kbd> hard
-            drop · <kbd className="rounded bg-white/10 px-1.5 py-0.5">P</kbd>{" "}
-            pause · <kbd className="rounded bg-white/10 px-1.5 py-0.5">A</kbd>{" "}
-            autopilot
+            <kbd className="rounded bg-white/10 px-1.5 py-0.5">P</kbd> pause ·{" "}
+            <kbd className="rounded bg-white/10 px-1.5 py-0.5">A</kbd> autopilot
+            · <kbd className="rounded bg-white/10 px-1.5 py-0.5">M</kbd> music ·{" "}
+            <kbd className="rounded bg-white/10 px-1.5 py-0.5">S</kbd> sfx
           </div>
         </div>
       </div>
