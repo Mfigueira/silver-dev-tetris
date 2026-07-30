@@ -1,6 +1,6 @@
-import { useEffect, useRef, useReducer } from 'react'
+import { useCallback, useEffect, useRef, useReducer } from 'react'
 import { findBestMove, shapesEqual } from '../game/ai'
-import { getDropInterval, LINE_CLEAR_DURATION_MS } from '../game/constants'
+import { CLEAR_SAFETY_TIMEOUT_MS, getDropInterval } from '../game/constants'
 import { createInitialState, reducer } from '../game/reducer'
 import { loadHighScore, saveHighScore } from '../game/storage'
 import type { GameState } from '../game/types'
@@ -48,9 +48,11 @@ export function useTetris() {
     return () => clearInterval(interval)
   }, [state.autopilot, state.level])
 
+  // The clear commits when the animation says so (see commitClear below); this
+  // only rescues the game if that call never arrives.
   useEffect(() => {
     if (state.status !== 'clearing') return
-    const timeout = setTimeout(() => dispatch({ type: 'COMMIT_CLEAR' }), LINE_CLEAR_DURATION_MS)
+    const timeout = setTimeout(() => dispatch({ type: 'COMMIT_CLEAR' }), CLEAR_SAFETY_TIMEOUT_MS)
     return () => clearTimeout(timeout)
   }, [state.status])
 
@@ -105,5 +107,7 @@ export function useTetris() {
     dispatch({ type: 'TOGGLE_AUTOPILOT' })
   }
 
-  return { state, toggleAutopilot }
+  const commitClear = useCallback(() => dispatch({ type: 'COMMIT_CLEAR' }), [])
+
+  return { state, toggleAutopilot, commitClear }
 }

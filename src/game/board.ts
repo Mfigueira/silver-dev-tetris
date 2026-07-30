@@ -49,6 +49,19 @@ export function mergePiece(board: Board, piece: ActivePiece): Board {
   return newBoard
 }
 
+/** Board cells the piece currently occupies, skipping any still above the ceiling. */
+export function getPieceCells(piece: ActivePiece): Position[] {
+  const cells: Position[] = []
+  piece.shape.forEach((row, y) => {
+    row.forEach((cell, x) => {
+      if (!cell) return
+      const boardY = piece.position.y + y
+      if (boardY >= 0) cells.push({ x: piece.position.x + x, y: boardY })
+    })
+  })
+  return cells
+}
+
 export function getFullRows(board: Board): number[] {
   const rows: number[] = []
   board.forEach((row, y) => {

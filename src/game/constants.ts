@@ -16,8 +16,12 @@ export const HARD_DROP_SCORE = 2
 
 export const HIGH_SCORE_KEY = 'react-tetris-high-score'
 
-/** Duration of the line-clear splash animation, in ms. Must match the CSS keyframe durations. */
-export const LINE_CLEAR_DURATION_MS = 380
+/**
+ * The line-clear timeline decides when the clear commits, so this is only a
+ * backstop for the case where it never reports back (an unmount mid-animation,
+ * say). Comfortably longer than the real animation; COMMIT_CLEAR is idempotent.
+ */
+export const CLEAR_SAFETY_TIMEOUT_MS = 2000
 
 /** Gravity tick interval in ms, decreasing (faster) as level increases. */
 export function getDropInterval(level: number): number {

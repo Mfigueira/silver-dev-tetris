@@ -1,4 +1,4 @@
-# Silver.dev Tetris
+# Tetris.dev
 
 A classic Tetris game built with React, TypeScript, and Vite, featuring a built-in AI that can play the game for you.
 
@@ -7,8 +7,9 @@ A classic Tetris game built with React, TypeScript, and Vite, featuring a built-
 - **Full Tetris gameplay** — all 7 tetrominoes (I, J, L, O, S, T, Z), rotation, soft/hard drop, line clears, and a leveling system that speeds up gravity as you clear more lines.
 - **Autopilot AI** — a heuristic-based solver that scores every possible rotation/column placement for the current piece (aggregate height, lines cleared, holes, bumpiness) and plays the best one automatically. Toggle it on/off at any time.
 - **Persistent high score** — saved to `localStorage` so it survives page reloads.
-- **Line-clear animation** and a next-piece preview.
-- Responsive, keyboard-driven UI styled with Tailwind CSS.
+- **GSAP-driven game feel** — line clears burst outward from the centre of each row and cascade bottom-to-top, with a board shake that scales up to a slow-motion beat on a Tetris. Landings get squash-and-stretch, a brightness flash, impact dust, and a jolt proportional to how far the piece fell.
+- **Next-piece preview** and a responsive, keyboard-driven UI styled with Tailwind CSS.
+- Honours `prefers-reduced-motion` by swapping the effects for a short fade.
 
 ## Controls
 
@@ -55,10 +56,31 @@ src/
     ai.ts            # Autopilot heuristic: evaluates placements and picks the best move
   hooks/
     useTetris.ts     # Wires the reducer to game loop timers, keyboard input, and autopilot
+  anim/
+    gsap.ts          # GSAP registration and the reduced-motion check
+    useBoardAnimations.ts  # Line-clear and impact timelines, plus their tuning values
   components/
     Board.tsx, Cell.tsx, NextPiece.tsx, SidePanel.tsx, GameOverlay.tsx
   App.tsx            # Top-level layout
 ```
+
+## How the Animations Fit In
+
+The reducer stays pure and publishes a `lastEffect` describing what just happened
+(a rotation, or a lock with its cells, contact row, drop distance, and rows
+completed). `useBoardAnimations` reacts to that, so gameplay logic never holds a
+duration or an easing curve. `Cell` exposes `data-row`/`data-col`/`data-variant`
+attributes for the animation layer to target, which keeps GSAP out of all 200
+cell components.
+
+The line-clear timeline **owns the game clock**: the reducer parks in the
+`clearing` status and only advances when the timeline's `onComplete` dispatches
+`COMMIT_CLEAR`, so the animation's length is defined in exactly one place.
+`CLEAR_SAFETY_TIMEOUT_MS` is a backstop for the case where that callback never
+arrives; `COMMIT_CLEAR` is idempotent, so a late backstop is harmless.
+
+`scripts/check-effects.ts` covers that contract. Run it with
+`npx vite-node scripts/check-effects.ts`.
 
 ## How the Autopilot Works
 
@@ -76,4 +98,5 @@ The placement with the highest score is chosen, and `useTetris` steers the piece
 - [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
 - [Vite](https://vite.dev/) for dev/build tooling
 - [Tailwind CSS](https://tailwindcss.com/) for styling
+- [GSAP](https://gsap.com/) + [@gsap/react](https://gsap.com/resources/React) for the animation timelines
 - [oxlint](https://oxc.rs/) for linting

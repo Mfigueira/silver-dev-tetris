@@ -13,7 +13,7 @@ export function GameOverlay({ status, score, highScore }: GameOverlayProps) {
     <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-xl bg-black/75 text-center backdrop-blur-sm">
       {status === 'idle' && (
         <>
-          <h2 className="text-2xl font-extrabold">Silver.dev Tetris</h2>
+          <h2 className="text-2xl font-extrabold">Tetris.dev</h2>
           <p className="text-sm text-white/60">Press Enter to start</p>
         </>
       )}

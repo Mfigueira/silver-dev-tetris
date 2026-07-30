@@ -6,19 +6,24 @@ import { SidePanel } from './components/SidePanel'
 import { useTetris } from './hooks/useTetris'
 
 function App() {
-  const { state, toggleAutopilot } = useTetris()
+  const { state, toggleAutopilot, commitClear } = useTetris()
   const grid = buildDisplayGrid(state.board, state.activePiece, state.clearingLines)
   const nextType = state.queue[0] ?? null
 
   return (
     <div className="flex min-h-screen flex-col items-center gap-6 px-4 py-8">
       <h1 className="text-3xl font-black tracking-tight">
-        Silver.dev <span className="text-cyan-400">Tetris</span>
+        Tetris<span className="text-cyan-400">.dev</span>
       </h1>
 
       <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
         <div className="relative">
-          <Board grid={grid} />
+          <Board
+            grid={grid}
+            clearingLines={state.clearingLines}
+            lastEffect={state.lastEffect}
+            onClearComplete={commitClear}
+          />
           <GameOverlay status={state.status} score={state.score} highScore={state.highScore} />
         </div>
 

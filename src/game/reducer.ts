@@ -4,12 +4,13 @@ import {
   createPiece,
   getFullRows,
   getGhostPosition,
+  getPieceCells,
   isValidPosition,
   mergePiece,
 } from './board'
 import { HARD_DROP_SCORE, LINES_PER_LEVEL, SCORE_TABLE, SOFT_DROP_SCORE } from './constants'
 import { createPieceQueue, refillQueueIfNeeded, rotateMatrixClockwise } from './tetrominoes'
-import type { ActivePiece, Board, GameState } from './types'
+import type { ActivePiece, Board, GameEffect, GameState } from './types'
 
 export type Action =
   | { type: 'ENTER' }
@@ -36,6 +37,7 @@ export function createInitialState(highScore: number): GameState {
     clearingLines: [],
     pendingClear: null,
     autopilot: false,
+    lastEffect: null,
   }
 }
 
@@ -53,6 +55,7 @@ function startGame(state: GameState): GameState {
     status: 'running',
     clearingLines: [],
     pendingClear: null,
+    lastEffect: null,
   }
 }
 
@@ -96,14 +99,23 @@ function finishLock(state: GameState, board: Board, linesCleared: number): GameS
   }
 }
 
-function lockPieceAndSpawnNext(state: GameState): GameState {
+function lockPieceAndSpawnNext(state: GameState, dropDistance = 0): GameState {
   if (!state.activePiece) return state
 
   const merged = mergePiece(state.board, state.activePiece)
   const fullRows = getFullRows(merged)
 
+  const cells = getPieceCells(state.activePiece)
+  const lockEffect: GameEffect = {
+    kind: 'lock',
+    cells,
+    impactRow: cells.reduce((lowest, cell) => Math.max(lowest, cell.y), 0),
+    dropDistance,
+    linesCleared: fullRows.length,
+  }
+
   if (fullRows.length === 0) {
-    return finishLock(state, merged, 0)
+    return { ...finishLock(state, merged, 0), lastEffect: lockEffect }
   }
 
   // Keep the completed rows on screen (still full) while the splash animation
@@ -118,6 +130,7 @@ function lockPieceAndSpawnNext(state: GameState): GameState {
     status: 'clearing',
     clearingLines: fullRows,
     pendingClear,
+    lastEffect: lockEffect,
   }
 }
 
@@ -147,7 +160,7 @@ function rotate(state: GameState): GameState {
   if (!state.activePiece || state.status !== 'running') return state
   const rotated = tryRotatePiece(state.board, state.activePiece)
   if (!rotated) return state
-  return { ...state, activePiece: rotated }
+  return { ...state, activePiece: rotated, lastEffect: { kind: 'rotate' } }
 }
 
 function hardDrop(state: GameState): GameState {
@@ -159,7 +172,7 @@ function hardDrop(state: GameState): GameState {
     activePiece: { ...state.activePiece, position: ghostPos },
     score: state.score + dropDistance * HARD_DROP_SCORE,
   }
-  return lockPieceAndSpawnNext(droppedState)
+  return lockPieceAndSpawnNext(droppedState, dropDistance)
 }
 
 export function reducer(state: GameState, action: Action): GameState {
@@ -185,7 +198,15 @@ export function reducer(state: GameState, action: Action): GameState {
       return moveDown(state)
     case 'COMMIT_CLEAR':
       if (state.status !== 'clearing' || !state.pendingClear) return state
-      return { ...state.pendingClear, clearingLines: [], pendingClear: null, autopilot: state.autopilot }
+      // pendingClear was snapshotted before the lock, so carry the live effect
+      // forward instead of rewinding to an already-animated one.
+      return {
+        ...state.pendingClear,
+        clearingLines: [],
+        pendingClear: null,
+        autopilot: state.autopilot,
+        lastEffect: state.lastEffect,
+      }
     case 'TOGGLE_AUTOPILOT':
       return { ...state, autopilot: !state.autopilot }
     default:
