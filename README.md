@@ -45,6 +45,20 @@ npm run preview  # preview the production build locally
 npm run lint      # run oxlint
 ```
 
+## Deployment
+
+Every push to `main` is linted, built, and published to GitHub Pages by
+`.github/workflows/deploy.yml`. Enable it once under **Settings → Pages** by
+setting **Source** to **GitHub Actions**.
+
+Pages serves the site from `/<repo-name>/`, so the workflow passes that prefix to
+the build as `BASE_PATH`. Local `dev` and `preview` leave it unset and run at `/`.
+To reproduce the deployed build locally:
+
+```bash
+BASE_PATH=/silver-dev-tetris/ npm run build
+```
+
 ## Project Structure
 
 ```
