@@ -25,6 +25,7 @@ export interface ActivePiece {
  */
 export type GameEffect =
   | { kind: 'rotate' }
+  | { kind: 'spawn'; type: TetrominoType }
   | {
       kind: 'lock'
       /** Board cells the piece occupied at the moment it locked. */
@@ -39,6 +40,8 @@ export type GameEffect =
        * animations fighting over the same transform.
        */
       linesCleared: number
+      /** Set when the next piece appears in the same tick as this lock. */
+      spawnType?: TetrominoType
     }
 
 /** Snapshot of the state to apply once the line-clear animation finishes. */

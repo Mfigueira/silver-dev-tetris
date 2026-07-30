@@ -183,6 +183,8 @@ export function useBoardAnimations({
         return
       }
 
+      if (lastEffect.kind !== 'lock') return
+
       const cellAt = (x: number, y: number) =>
         board.querySelector<HTMLElement>(`[data-row="${y}"][data-col="${x}"]`)
       const isElement = (el: HTMLElement | null): el is HTMLElement => el !== null

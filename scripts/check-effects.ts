@@ -22,6 +22,47 @@ function run(state: GameState, actions: Action[]): GameState {
   return actions.reduce(reducer, state)
 }
 
+console.log('\nstarting a game emits a spawn effect')
+{
+  const started = run(createInitialState(0), [{ type: 'ENTER' }])
+  check('effect is spawn', started.lastEffect?.kind === 'spawn', started.lastEffect)
+  if (started.lastEffect?.kind === 'spawn') {
+    check('spawn type matches active piece', started.lastEffect.type === started.activePiece?.type, started.lastEffect)
+  }
+}
+
+console.log('\nimmediate respawn after lock carries spawnType on the lock effect')
+{
+  const started = run(createInitialState(0), [{ type: 'ENTER' }])
+  const dropped = reducer(started, { type: 'HARD_DROP' })
+  check(
+    'lock effect includes spawnType',
+    dropped.lastEffect?.kind === 'lock' && dropped.lastEffect.spawnType === dropped.activePiece?.type,
+    dropped.lastEffect,
+  )
+}
+
+console.log('\nspawn after a line clear waits for COMMIT_CLEAR')
+{
+  const base = createInitialState(0)
+  const board = base.board.map((row) => [...row])
+  for (let x = 0; x < BOARD_WIDTH - 1; x++) board[BOARD_HEIGHT - 1][x] = 'I'
+
+  const staged: GameState = {
+    ...base,
+    board,
+    status: 'running',
+    activePiece: { type: 'O', shape: [[1]], position: { x: BOARD_WIDTH - 1, y: 0 } },
+    queue: ['T', 'L', 'J'],
+  }
+
+  const cleared = reducer(staged, { type: 'HARD_DROP' })
+  check('lock during clear has no spawnType', cleared.lastEffect?.kind === 'lock' && !cleared.lastEffect.spawnType, cleared.lastEffect)
+
+  const committed = reducer(cleared, { type: 'COMMIT_CLEAR' })
+  check('commit emits spawn', committed.lastEffect?.kind === 'spawn', committed.lastEffect)
+}
+
 console.log('\nhard drop emits a lock effect carrying drop distance')
 {
   const started = run(createInitialState(0), [{ type: 'ENTER' }])
@@ -99,8 +140,8 @@ console.log('\nclearing a row reports linesCleared and holds until COMMIT_CLEAR'
   check('status returns to running', committed.status === 'running', committed.status)
   check('row is gone', committed.board[BOARD_HEIGHT - 1].every((c) => c === null))
   check(
-    'COMMIT_CLEAR carries the live effect forward, not a stale one',
-    committed.lastEffect === cleared.lastEffect,
+    'COMMIT_CLEAR emits a spawn for the next piece',
+    committed.lastEffect?.kind === 'spawn' && committed.lastEffect.type === committed.activePiece?.type,
     committed.lastEffect,
   )
   check(

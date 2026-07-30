@@ -55,7 +55,7 @@ function startGame(state: GameState): GameState {
     status: 'running',
     clearingLines: [],
     pendingClear: null,
-    lastEffect: null,
+    lastEffect: { kind: 'spawn', type: firstType },
   }
 }
 
@@ -115,7 +115,13 @@ function lockPieceAndSpawnNext(state: GameState, dropDistance = 0): GameState {
   }
 
   if (fullRows.length === 0) {
-    return { ...finishLock(state, merged, 0), lastEffect: lockEffect }
+    const next = finishLock(state, merged, 0)
+    return {
+      ...next,
+      lastEffect: next.activePiece
+        ? { ...lockEffect, spawnType: next.activePiece.type }
+        : lockEffect,
+    }
   }
 
   // Keep the completed rows on screen (still full) while the splash animation
@@ -205,7 +211,9 @@ export function reducer(state: GameState, action: Action): GameState {
         clearingLines: [],
         pendingClear: null,
         autopilot: state.autopilot,
-        lastEffect: state.lastEffect,
+        lastEffect: state.pendingClear.activePiece
+          ? { kind: 'spawn', type: state.pendingClear.activePiece.type }
+          : state.lastEffect,
       }
     case 'TOGGLE_AUTOPILOT':
       return { ...state, autopilot: !state.autopilot }

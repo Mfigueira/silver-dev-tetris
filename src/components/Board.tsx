@@ -2,14 +2,17 @@ import { useRef } from "react";
 import { DUST_POOL_SIZE, useBoardAnimations } from "../anim/useBoardAnimations";
 import { BOARD_WIDTH } from "../game/constants";
 import type { DisplayCell } from "../game/board";
-import type { GameEffect, GameStatus } from "../game/types";
+import type { GameEffect, GameStatus, TetrominoType } from "../game/types";
 import { Cell } from "./Cell";
+import { SpawnGate } from "./SpawnGate";
 
 interface BoardProps {
   grid: DisplayCell[][];
   clearingLines: number[];
   lastEffect: GameEffect | null;
+  nextType: TetrominoType | null;
   status: GameStatus;
+  level: number;
   onClearComplete: () => void;
 }
 
@@ -17,7 +20,9 @@ export function Board({
   grid,
   clearingLines,
   lastEffect,
+  nextType,
   status,
+  level,
   onClearComplete,
 }: BoardProps) {
   const boardRef = useRef<HTMLDivElement>(null);
@@ -52,6 +57,8 @@ export function Board({
           <Cell key={`${y}-${x}`} cell={cell} row={y} col={x} />
         )),
       )}
+
+      <SpawnGate boardRef={boardRef} lastEffect={lastEffect} nextType={nextType} status={status} level={level} />
 
       {/* Reused pool of impact motes, parked offscreen until a drop places them. */}
       <div
