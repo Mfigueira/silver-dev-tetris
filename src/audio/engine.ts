@@ -10,6 +10,7 @@ class AudioEngine {
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
   private musicGain: GainNode | null = null;
+  private musicDuck: GainNode | null = null;
   private sfxGain: GainNode | null = null;
   private settings: SoundSettings = loadSoundSettings();
   private listeners = new Set<SettingsListener>();
@@ -80,6 +81,24 @@ class AudioEngine {
     return this.sfxGain;
   }
 
+  /**
+   * Dips the music under a loud effect so it stays audible without turning the
+   * mix to mush. Lives on its own node so the volume toggle can keep writing
+   * musicGain directly without fighting this automation.
+   */
+  duckMusic(depth: number, hold: number, release: number): void {
+    const ctx = this.getContext();
+    if (!ctx || !this.musicDuck) return;
+
+    const now = ctx.currentTime;
+    const gain = this.musicDuck.gain;
+    gain.cancelScheduledValues(now);
+    gain.setValueAtTime(gain.value, now);
+    gain.linearRampToValueAtTime(depth, now + 0.02);
+    gain.setValueAtTime(depth, now + hold);
+    gain.linearRampToValueAtTime(1, now + hold + release);
+  }
+
   private ensureContext(): AudioContext | null {
     if (typeof window === "undefined") return null;
     if (!this.ctx) {
@@ -91,10 +110,23 @@ class AudioEngine {
       this.ctx = new Ctx();
       this.masterGain = this.ctx.createGain();
       this.musicGain = this.ctx.createGain();
+      this.musicDuck = this.ctx.createGain();
       this.sfxGain = this.ctx.createGain();
-      this.musicGain.connect(this.masterGain);
+
+      // Stacked effects (impact + line clear + level up) can sum past full
+      // scale, so everything lands on a limiter before the speakers.
+      const limiter = this.ctx.createDynamicsCompressor();
+      limiter.threshold.value = -8;
+      limiter.knee.value = 6;
+      limiter.ratio.value = 12;
+      limiter.attack.value = 0.003;
+      limiter.release.value = 0.18;
+
+      this.musicGain.connect(this.musicDuck);
+      this.musicDuck.connect(this.masterGain);
       this.sfxGain.connect(this.masterGain);
-      this.masterGain.connect(this.ctx.destination);
+      this.masterGain.connect(limiter);
+      limiter.connect(this.ctx.destination);
       this.applyGains();
     }
     return this.ctx;
